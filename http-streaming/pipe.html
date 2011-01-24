@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+<meta charset="utf-8" />
+<link href='http://fonts.googleapis.com/css?family=Droid+Serif' rel='stylesheet' type='text/css'>
+<title>Comet Pipe Demo</title>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+google.load("jquery", '1.4');
+google.setOnLoadCallback(function(){
+$(document.body).ready(function(){
+
+var Comet = function(options) {
+	// options init
+	var opt = {
+		domain : document.domain,
+		req : '/req',
+		iframe : '/iframe',
+		ajax : '/ajax',
+		timeout : 300,
+		cb : null,
+		cl : null,
+		ajaxFlagLen : 10,
+		ajaxNoiseLen : 1024
+	}
+	for (k in options) {
+		opt[k] = options[k];
+	}
+	// calculate bytes length for string
+	var blen = function(str) {
+		var arr = str.match(/[^\x00-\xff]/ig);
+		return arr == null ? str.length : str.length + arr.length;
+	}
+	// some arguments init
+	var pageid = new Date().getTime();
+	var type = $.browser.msie ? 'iframe' : 'ajax';
+	// public props
+	var me = {
+		pageid : pageid,
+		type : type,
+		recvUrl : opt[type] + '/' + pageid,
+		reqUrl : opt.req + '/' + pageid + '/' + type,
+		conn : null,
+		div : null,
+		send : function(){
+			$.get(this.reqUrl);
+		}
+	}
+	// init iframe receiver
+	if (me.type == 'iframe') {
+		// create htmlfire
+		me.conn = new ActiveXObject("htmlfile");
+		me.conn.open();
+		// set domain
+		me.conn.write("<html><script>document.domain = '"+opt.domain+"'</html>");
+		me.conn.close();
+		me.div = me.conn.createElement("div");
+		me.conn.appendChild(me.div);
+		me.conn.parentWindow.send = function (data) {
+			opt.cl ? opt.cb.call(opt.cl, data) : opt.cb(data);
+		};
+		me.div.innerHTML = "<iframe id='comet' src='" + me.recvUrl + "'></iframe>";
+	// init ajax receiver
+	} else {
+		me.conn = new XMLHttpRequest();
+
+		me.conn.open("GET", me.recvUrl, true);
+		var pos = 0;
+		var chunk = '';
+		var data = '';
+		var size = -1;
+		var noise = 0;
+		me.conn.onreadystatechange = function(){
+			if (this.readyState == 3 || this.readyState == 4) {
+				// chars length
+				chunk = this.responseText.substr(pos);
+				pos = this.responseText.length;
+				if (noise < opt.ajaxNoiseLen) {
+					noise += chunk.length;
+					return;
+				}
+				// bytes length
+				if (size < 0) {
+					size = parseInt(chunk.substr(0, 8), 16);
+					chunk = chunk.substr(8);
+				}
+				data += chunk;
+				// one done
+				if (blen(data) == size) {
+					opt.cl ? opt.cb.call(opt.cl, data) : opt.cb(data);
+					size = -1;
+					data = '';
+				}
+			}
+
+		}
+		me.conn.send();
+	}
+	return me;
+}
+
+function showMessage(msg){
+	var dom = document.createElement('h4');
+	dom.innerHTML = msg;
+	var prt = document.getElementById('msg');
+	if (prt.hasChildNodes()) {
+		prt.insertBefore(dom, prt.firstChild)
+	} else {
+		prt.appendChild(dom);
+	}
+}
+window.setTimeout(function(){
+	if ($.browser.msie) {
+		$('#btn').html('<input type="submit" id="go_iframe" value="Get time with iframe" />');
+	} else {
+		$('#btn').html('<input type="submit" id="go_ajax" value="Get time with ajax" />');
+	}
+	var c = new Comet({
+		cb : function(data) {
+			showMessage(data);
+		}
+	});
+
+	$('#go_iframe').click(function(){
+		c.send();
+	});
+	$('#go_ajax').click(function(){
+		c.send();
+	});
+}, 0);
+
+
+});
+});
+</script>
+</head>
+<body>
+<div id="btn"></div>
+<div id="msg"></div>
+<pre id="console"></pre>
+</body>
+</html>
