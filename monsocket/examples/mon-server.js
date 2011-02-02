@@ -1,5 +1,8 @@
 var sys = require("sys")
-  , ws = require('../lib/ws/server');
+	,http = require("http")
+	,fs = require("fs")
+	,path = require("path")
+	, ws = require('../lib/ws/server');
 
 var sys = require('sys');
 var spawn = require('child_process').spawn;
@@ -13,15 +16,45 @@ function format_string(line) {
 	return line;
 }
 
-var server = ws.createServer({debug: true});
+var httpServer = http.createServer(function(req, res){
+  if(req.method == "GET"){
+    if( req.url.indexOf("favicon") > -1 ){
+      res.writeHead(200, {'Content-Type': 'image/x-icon', 'Connection': 'close'});
+      res.end("");
+    } else {
+      res.writeHead(200, {'Content-Type': 'text/html', 'Connection': 'close'});
+      fs.createReadStream( path.normalize(path.join(__dirname, "mon-client.html")), {
+        'flags': 'r',
+        'encoding': 'binary',
+        'mode': 0666,
+        'bufferSize': 4 * 1024
+      }).addListener("data", function(chunk){
+        res.write(chunk, 'binary');
+      }).addListener("end",function() {
+        res.end();
+      });
+    }
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+
+
+var server = ws.createServer({
+	debug: true,
+	server: httpServer});
 
 // Handle WebSocket Requests
 server.addListener("connection", function(conn){
   conn.send("Connection: "+conn.id);
+  sys.puts("Connection: "+conn.id);
   mon.stdout.on('data',function(data) {
 	data = format_string(data);
 	sys.puts(data);
-    conn.send("#mon:"+data+"");
+	if(conn._state==4)
+    	conn.send("#mon:"+data+"");
   });
 
   conn.addListener("message", function(message){
@@ -42,4 +75,4 @@ server.addListener("disconnected", function(conn){
   server.broadcast("<"+conn.id+"> disconnected");
 });
 
-server.listen(8000);
+server.listen(8080);

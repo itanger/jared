@@ -38,7 +38,9 @@ var log = function(s) {
     }
 }
 log.buffer = [];
-url = "ws://localhost:8000/echo";
+var hostname = location.hostname;
+var port = location.port;
+url = "ws://"+hostname+":"+port+"/echo";
 w = new WebSocket(url);
 w.onopen = function() {
     log("open");
