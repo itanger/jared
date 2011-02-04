@@ -7,4 +7,7 @@ mem=`top -b -n 1 | grep -w Mem | awk '{printf"%d",$4/$2*100}'`
 cpu=`top -b -n 1 | grep -w Cpu | awk '{print$5}' | awk -F '%' '{printf"%d",$1}'`
 declare -i cpu=100-$cpu
 
-echo "cpu "$cpu" disk "$disk" mem "$mem
+today=`date +"%b '%y"`
+net=`vnstat -m | grep "$today" | awk '{printf"%.2f",$3}'`
+
+echo "cpu "$cpu" disk "$disk" mem "$mem" net "$net

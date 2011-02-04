@@ -18,7 +18,7 @@ function format_string(line) {
 		if(data.indexOf("rx")>0) {
 			var arr = data.split(" ");
 			sys.puts(arr);
-			sys.puts(""+arr[2]+","+arr[7]);
+			sys.puts("out:"+arr[2]+","+arr[7]);
 		}
 		//sys.puts(data.match(/\d+/g));
 		//sys.puts(data);
