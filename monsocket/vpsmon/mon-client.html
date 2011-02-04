@@ -20,6 +20,20 @@
 </tr>
 </table>
 
+<table width=480>
+<thead><td>cpu</td><td>disk</td><td>mem</td><td>network</td></thead>
+<tbody id="summary"></tbody>
+</tr>
+</table>
+
+<div id="out_summary"></div>
+
+<table width=480>
+<thead><td>rx</td><td>tx</td></thead>
+<tbody id="out_realtime"></tbody>
+</tr>
+</table>
+
 <form id="msgForm">
 <input size=50 type="text" id="inputMessage" value="Hello" ><button
 id="sendButton">Send</button>
@@ -49,9 +63,31 @@ w.onopen = function() {
 }
 w.onmessage = function(e) {
 	var msg = e.data;
-	if(msg.match(/#mon/)) {
+	var body = "";
+	if(msg.match(/#mon_realtime:::/)) {
+		msg = msg.split(":::")[1];
+		if(msg.indexOf("rx")==0) {
+			var  a = msg.split(" ");
+			body += "<td>"+a[1]+" "+a[2]+"</td>";
+			body += "<td>"+a[6]+" "+a[7]+"</td>";
+			$("#out_realtime").html(body);
+		}
+	}
+	else if(msg.match(/#mon_summary:::/)) {
+		msg = msg.split(":::")[1];
+		//msg = msg.replace("\n","<br>");
+		$("#out_summary").html("<pre>"+msg+"</pre>");
+	}
+	else if(msg.match(/#mon2/)) {
 		var monarr = msg.split(":")[1].split(" ");
-		var body = "";
+		for(var  i=0;i<monarr.length; i++) {
+			if(i%2==0) continue;
+			body += "<td id='io_"+item+"'>"+monarr[i]+"</td>"
+		}
+		$("#summary").html(body);
+	}
+	else if(msg.match(/#mon/)) {
+		var monarr = msg.split(":")[1].split(" ");
 		for(var item in monarr) {
 			body += "<td id='io_"+item+"'>"+monarr[item]+"</td>"
 		}

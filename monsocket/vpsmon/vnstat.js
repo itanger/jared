@@ -13,11 +13,12 @@ function format_string(line) {
 
 
   mon.stdout.on('data',function(data) {
-		data = format_string(data);
+		sys.puts(data);
+		return;
 		data = ""+data;
 		if(data.indexOf("rx")>0) {
 			var arr = data.split(" ");
-			sys.puts(arr);
+			sys.puts("["+data+"]");
 			sys.puts("out:"+arr[2]+","+arr[7]);
 		}
 		//sys.puts(data.match(/\d+/g));
