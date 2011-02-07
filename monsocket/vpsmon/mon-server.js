@@ -9,14 +9,16 @@ var sys = require('sys');
 var spawn = require('child_process').spawn;
 var mon = spawn("iostat",["-I","5"]);
 var mon_realtime = spawn("vnstat",["-l"]);
+var mon_summary = spawn("vnstat",["-s"]);
 sys.puts("starting");
 
 function format_string(line) {
 	
-	line = (""+line).replace(/^[\s\n]+|[\s\n]+$/g,"");
+	line = (""+line).replace(/^[\t\s\n]+|[\t\s\n]+$/g,"");
 	line = line.replace(/[\t\s]+/g," ");
 	return line;
 }
+
 
 
 
@@ -60,19 +62,6 @@ var httpServer = http.createServer(function(req, res){
 
 			});
 		});
-/*
-		res.writeHead(200, {'Content-Type': 'text/html', 'Connection': 'close'});
-		fs.createReadStream( path.normalize(path.join(__dirname, "mon-client.html")), {
-			'flags': 'r',
-			'encoding': 'binary',
-			'mode': 0666,
-			'bufferSize': 4 * 1024
-		}).addListener("data", function(chunk){
-			res.write(chunk, 'binary');
-		}).addListener("end",function() {
-			res.end();
-		});
-*/
     }
   } else {
     res.writeHead(404);
@@ -84,20 +73,21 @@ var httpServer = http.createServer(function(req, res){
 
 var server = ws.createServer({
 	debug: true,
-	server: httpServer});
+	server: httpServer
+	});
 
 // Handle WebSocket Requests
 server.addListener("connection", function(conn){
 	conn.send("Connection: "+conn.id);
 	sys.puts("Connection: "+conn.id);
-	var mon2 = spawn("/bin/sh",["get_system_usage.sh"]);
 
-    mon2.stdout.on('data',function(data) {
-		data = format_string(data);
-		sys.puts(data);
-		if(conn._state==4)
-    		conn.send("#mon2:"+data+"");
-	});
+	var mon2 = spawn("/bin/sh",["get_system_usage.sh"]);
+		mon2.stdout.on('data',function(data) {
+			data = format_string(data);
+			sys.puts(data);
+			if(conn._state==4)
+				conn.send("#mon_usage:::"+data+"");
+		});
 	mon2.stderr.on('data',function(data){
 		sys.puts("error : "+data);
 	});
@@ -110,12 +100,17 @@ server.addListener("connection", function(conn){
     		conn.send("#mon_realtime:::"+data+"");
 		}
 	});
-	var mon_summary = spawn("vnstat",["-s"]);
-    mon_summary.stdout.on('data',function(data) {
-		//data = format_string(data);
-		if(conn._state==4)
-    		conn.send("#mon_summary:::"+data+"");
-	});
+
+	mon_summary = spawn("vnstat",["-s"]);
+	//setInterval(function(){
+		//mon_summary = spawn("vnstat",["-s"]);
+		mon_summary.stdout.on('data',function(data) {
+			//data = format_string(data);
+			if(conn._state==4)
+				conn.send("#mon_summary:::"+data+"");
+		});
+	//},5000);
+
 
   conn.addListener("message", function(message){
     conn.broadcast("<"+conn.id+"> "+message);
