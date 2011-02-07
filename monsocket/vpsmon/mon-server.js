@@ -94,7 +94,7 @@ server.addListener("connection", function(conn){
 
     mon_realtime.stdout.on('data',function(data) {
 		data = format_string(data);
-		if(data.indexOf("rx")==0)
+		if(data.indexOf("rx")>=0)
 		{
 		if(conn._state==4)
     		conn.send("#mon_realtime:::"+data+"");
