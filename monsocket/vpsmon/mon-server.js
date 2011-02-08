@@ -51,7 +51,10 @@ var httpServer = http.createServer(function(req, res){
 				
 				var contentTypes = {
 				  "js": "application/x-javascript",
-				  "css": "text/plain"
+				  "css": "text/plain",
+				  "png": "image/png",
+				  "jpeg": "image/jpeg",
+				  "gif": "image/gif"
 				}
 				//res.writeHeader(200,{'Content-Type': contentTypes[ext] || 'text/html'});  
 				res.writeHeader(200,{'Content-Type': contentTypes[ext] });  
