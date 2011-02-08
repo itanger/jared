@@ -15,7 +15,7 @@ sys.puts("starting");
 function format_string(line) {
 	line = ""+line;	
 	line = line.replace(/[\t\s]+/g," ");
-	line = line.replace(/^[\t\s\n]+|[\t\s\n]+$/g,"");
+	line = line.replace(/^[^\w]+|[^\w]+$/g,"");
 	return line;
 }
 
