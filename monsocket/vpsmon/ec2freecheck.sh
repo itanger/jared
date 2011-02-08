@@ -8,9 +8,10 @@ max=$((20*1))
 echo $usage" of "$max
 if [ $usage -gt $max ]; then
 	echo "Warning: exceed max traffic"
-	echo "Force to close the VPN Service"
+	echo "Force to shutdown the VPN Service"
+	/etc/init.d/pptpd stop
+	echo "Completed"
 	
 else
 	echo "It's OK"
 fi
-#echo "scale=4; ($usage/$max)*100" | bc
