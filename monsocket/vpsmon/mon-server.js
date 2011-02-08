@@ -102,14 +102,17 @@ server.addListener("connection", function(conn){
 	});
 
 	mon_summary = spawn("vnstat",["-s"]);
-	//setInterval(function(){
-		//mon_summary = spawn("vnstat",["-s"]);
-		mon_summary.stdout.on('data',function(data) {
+	mon_summary.stdout.on('data',function(data) {
 			//data = format_string(data);
 			if(conn._state==4)
 				conn.send("#mon_summary:::"+data+"");
-		});
-	//},5000);
+	});
+	mon_summary = spawn("vnstat",["-d"]);
+	mon_summary.stdout.on('data',function(data) {
+			//data = format_string(data);
+			if(conn._state==4)
+				conn.send("#mon_summary:::"+data+"");
+	});
 
 
   conn.addListener("message", function(message){

@@ -7,6 +7,6 @@ cpu=`top -b -n 1 | grep -w Cpu | awk '{print$5}' | awk -F '%' '{printf"%d",$1}'`
 declare -i cpu=100-$cpu
 
 today=`date +"%b '%y"`
-net=`vnstat -m | grep "$today" | awk '{printf"%.2f",$3}'`
+net=`vnstat -m | grep "$today" | awk '{printf"%.2f",$9}'`
 
 echo "cpu "$cpu" disk "$disk" mem "$mem" net "$net

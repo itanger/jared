@@ -10,7 +10,7 @@
 .montable {width: 600px; }
 #out_summary { width: 600px; border: #EEEEEE solid 1px; background: #E7E7E7 }
 
-#rx {background: red; color: white; padding: 5px; }
+#rx {background: blue; color: white; padding: 5px; }
 #tx {background: green; color: white; padding: 5px; }
 </style>
 <script src="jquery-1.5.min.js" type="text/javascript" charset="utf-8"></script>
@@ -19,6 +19,14 @@
 <body>
 
 <h2>VPS Mon - for EC2 (WebSocket & Node.JS)</h2>
+
+<h3>Current Traffic</h3>
+<table class="montable">
+<thead><td>rx</td><td>tx</td></thead>
+<tbody id="out_realtime"></tbody>
+</tr>
+</table>
+
 
 <h3>System Usage</h3>
 <table class="montable">
@@ -30,14 +38,7 @@
 <h3>Network History</h3>
 <div id="out_summary"></div>
 
-<h3>Current Traffic</h3>
-<table class="montable">
-<thead><td>rx</td><td>tx</td></thead>
-<tbody id="out_realtime"></tbody>
-</tr>
-</table>
-
-<form id="msgForm">
+<form id="msgForm" style="display: none;">
 <input size=50 type="text" id="inputMessage" value="Hello" ><button
 id="sendButton">Send</button>
 </form>
@@ -79,17 +80,18 @@ w.onmessage = function(e) {
 	else if(msg.match(/#mon_summary:::/)) {
 		msg = msg.split(":::")[1];
 		//msg = msg.replace("\n","<br>");
-		$("#out_summary").html("<pre>"+msg+"</pre>");
+		$("#out_summary").append("<pre>"+msg+"</pre>");
 	}
 	else if(msg.match(/#mon_usage:::/)) {
 		var monarr = msg.split(":::")[1].split(" ");
 		var disk = monarr[3];
 		var mem = monarr[5]; 
-		var network = monarr[7]/1024;
-		network = network.toFixed(2)
+		var network = monarr[7];
+		var network_p = 100*network/(1024*30);
+		network_p = network_p.toFixed(4)
 		body += "<td id='io_1'>"+disk+"%</td>"
-		body += "<td id='io_2'>"+mem+"%</td>"
-		body += "<td id='io_3'>"+network+"%</td>"
+		body += "<td id='io_4'>"+mem+"%</td>"
+		body += "<td id='io_7'>"+network_p+"% ("+network+"M bytes of 30G/Month)</td>"
 		$("#summary").html(body);
 	}
 	else if(msg.match(/#mon/)) {
