@@ -28,6 +28,7 @@ var opt = {
 	sql : sql,
 	mode : mode,
 	num : num,
+	table : parseInt(argv[5]),
 	interval : 1000,
 	cb : function(res) {
 		all.push(res);

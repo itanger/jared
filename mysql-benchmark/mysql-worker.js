@@ -1,4 +1,5 @@
 var ntv = require('./mysql-conn-native'),
+	ntv2 = require('./mysql-conn-native2'),
 	lib = require('./mysql-conn-libmysql');
 
 exports.create = function(options, id) {
@@ -13,7 +14,8 @@ exports.create = function(options, id) {
 		mode : 'callback',
 		num : 100000,
 		interval : 1000,
-		cb : null
+		cb : null,
+		table : 0,
 	}
 	for (key in options){
 		opt[key] = options[key];
@@ -64,7 +66,9 @@ exports.create = function(options, id) {
 
 	if (opt.driver == 'native') {
 		ntv.run(opt, result, checkDone);
-	} else {
+	} else if (opt.driver == 'native2') {
+		ntv2.run(opt, result, checkDone);
+	}else {
 		lib.run(opt, result, checkDone);
 	}
 }
