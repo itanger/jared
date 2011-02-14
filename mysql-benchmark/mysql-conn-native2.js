@@ -12,18 +12,33 @@ exports.run = function(opt, result, checkDone) {
 	var close = function() {
 		conn.close();
 	}
-
-	var exec = function(){
-		var query = conn.query(opt.sql);
-		var num = 0;
-		query.on('row', function(row) {
-			if (++num >= opt.table) {
-				num = 0;
-				++result.ok;
-				checkDone(exec, close);
-			}
-		});
+	if (opt.mode == 'query') {
+		var exec = function(){
+			var query = conn.query(opt.sql);
+			var num = 0;
+			query.on('row', function(row) {
+				if (++num >= opt.table) {
+					num = 0;
+					++result.ok;
+					checkDone(exec, close);
+				}
+			});
+		}
+		result.linear.lastTime = result.begin = new Date().getTime();
+		exec();
+	} else {
+		var exec = function(){
+			var query = conn.execute(opt.sql);
+			var num = 0;
+			query.on('row', function(row) {
+				if (++num >= opt.table) {
+					num = 0;
+					++result.ok;
+					checkDone(exec, close);
+				}
+			});
+		}
+		result.linear.lastTime = result.begin = new Date().getTime();
+		exec();
 	}
-	result.linear.lastTime = result.begin = new Date().getTime();
-	exec();
 }
